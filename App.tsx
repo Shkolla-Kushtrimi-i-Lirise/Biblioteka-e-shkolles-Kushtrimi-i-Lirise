@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Book, ViewState, LoginSession, SentEmail, Theme } from './types';
 import Sidebar from './components/Sidebar';
 import BookCard from './components/BookCard';
@@ -100,8 +100,9 @@ const INITIAL_BOOKS: Book[] = [
 ];
 
 const App: React.FC = () => {
+  // Theme Persistence
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('biblioteka_theme');
+    const saved = localStorage.getItem('biblioteka_theme_id');
     if (saved) {
       const found = THEMES.find(t => t.id === saved);
       if (found) return found;
@@ -109,33 +110,44 @@ const App: React.FC = () => {
     return THEMES[0];
   });
 
+  // Books Persistence
   const [books, setBooks] = useState<Book[]>(() => {
-    const saved = localStorage.getItem('athenaeum_books');
+    const saved = localStorage.getItem('biblioteka_books');
     return saved ? JSON.parse(saved) : INITIAL_BOOKS;
   });
   
+  // Borrowed State Persistence
   const [borrowedBookIds, setBorrowedBookIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem('borrowed_books');
+    const saved = localStorage.getItem('biblioteka_borrowed_ids');
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Login History Persistence
   const [loginHistory, setLoginHistory] = useState<LoginSession[]>(() => {
-    const saved = localStorage.getItem('login_history');
+    const saved = localStorage.getItem('biblioteka_login_history');
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Sent Emails Persistence
   const [sentEmails, setSentEmails] = useState<SentEmail[]>(() => {
-    const saved = localStorage.getItem('sent_emails');
+    const saved = localStorage.getItem('biblioteka_sent_emails');
     return saved ? JSON.parse(saved) : [];
+  });
+
+  // Admin Session Persistence
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return localStorage.getItem('biblioteka_admin_active') === 'true';
   });
 
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [view, setView] = useState<ViewState>('LOGIN');
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [view, setView] = useState<ViewState>(() => {
+    return localStorage.getItem('biblioteka_admin_active') === 'true' ? 'HOME' : 'LOGIN';
+  });
   const [notification, setNotification] = useState<string | null>(null);
 
+  // Sync state to LocalStorage
   useEffect(() => {
-    localStorage.setItem('biblioteka_theme', theme.id);
+    localStorage.setItem('biblioteka_theme_id', theme.id);
     const root = document.documentElement;
     root.style.setProperty('--color-primary', theme.primary);
     root.style.setProperty('--color-bg', theme.bg);
@@ -146,20 +158,24 @@ const App: React.FC = () => {
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem('athenaeum_books', JSON.stringify(books));
+    localStorage.setItem('biblioteka_books', JSON.stringify(books));
   }, [books]);
 
   useEffect(() => {
-    localStorage.setItem('borrowed_books', JSON.stringify(borrowedBookIds));
+    localStorage.setItem('biblioteka_borrowed_ids', JSON.stringify(borrowedBookIds));
   }, [borrowedBookIds]);
 
   useEffect(() => {
-    localStorage.setItem('login_history', JSON.stringify(loginHistory));
+    localStorage.setItem('biblioteka_login_history', JSON.stringify(loginHistory));
   }, [loginHistory]);
 
   useEffect(() => {
-    localStorage.setItem('sent_emails', JSON.stringify(sentEmails));
+    localStorage.setItem('biblioteka_sent_emails', JSON.stringify(sentEmails));
   }, [sentEmails]);
+
+  useEffect(() => {
+    localStorage.setItem('biblioteka_admin_active', isAdmin.toString());
+  }, [isAdmin]);
 
   const handleAddBook = (newBook: Book) => {
     setBooks(prev => [newBook, ...prev]);
@@ -213,7 +229,7 @@ const App: React.FC = () => {
     setView('LOGIN');
   };
 
-  if (view === 'LOGIN') {
+  if (view === 'LOGIN' && !isAdmin) {
     return <LoginPage onClose={() => setView('HOME')} onLogin={handleLogin} />;
   }
 
@@ -230,18 +246,24 @@ const App: React.FC = () => {
       />
 
       <main className="flex-1 overflow-y-auto p-8 md:p-12 relative scroll-smooth">
-        <header className="mb-12">
-          <h2 className="text-4xl font-light text-ink">
-            {view === 'HOME' ? 'Koleksioni ynë' : 
-             view === 'ADMIN' ? 'Paneli i Kontrollit' : 
-             view === 'INBOX' ? 'Kutia e Mesazheve' : 'Cilësimet e Sistemit'}
-          </h2>
-          <p className="text-primary/60 italic mt-1">
-            {view === 'HOME' 
-              ? `Duke shfaqur ${books.length} vepra të kuruara` 
-              : view === 'ADMIN' ? 'Menaxhoni katalogun dhe stafin' : 
-                view === 'INBOX' ? 'Mesazhet e dërguara automatikisht' : 'Personalizoni pamjen e bibliotekës'}
-          </p>
+        <header className="mb-12 flex justify-between items-start">
+          <div>
+            <h2 className="text-4xl font-light text-ink tracking-tight">
+              {view === 'HOME' ? 'Koleksioni ynë' : 
+               view === 'ADMIN' ? 'Paneli i Kontrollit' : 
+               view === 'INBOX' ? 'Kutia e Mesazheve' : 'Cilësimet e Sistemit'}
+            </h2>
+            <p className="text-primary/60 italic mt-1 font-medium">
+              {view === 'HOME' 
+                ? `Duke shfaqur ${books.length} vepra të kuruara` 
+                : view === 'ADMIN' ? 'Menaxhoni katalogun dhe stafin' : 
+                  view === 'INBOX' ? 'Mesazhet e dërguara automatikisht' : 'Personalizoni pamjen e bibliotekës'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full border border-primary/10">
+            <span className="material-icons text-primary text-xs">sync</span>
+            <span className="text-[10px] uppercase tracking-widest font-bold text-primary">Të dhënat ruhen lokalisht</span>
+          </div>
         </header>
 
         {view === 'HOME' && (
