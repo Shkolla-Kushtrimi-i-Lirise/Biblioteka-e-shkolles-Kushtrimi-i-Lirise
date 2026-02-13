@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="sq">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biblioteka | Kuratori Digjital</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "var(--color-primary)",
+              beige: "var(--color-bg)",
+              "vintage-beige": "var(--color-secondary-bg)",
+              ink: "var(--color-ink)",
+              accent: "var(--color-accent)"
+            },
+            fontFamily: {
+              serif: ["Newsreader", "serif"]
+            }
+          }
+        }
+      }
+    </script>
+    <style type="text/tailwindcss">
+      @layer base {
+        body {
+          @apply bg-beige text-ink font-serif antialiased transition-colors duration-500;
+        }
+      }
+      .grain-overlay {
+        background-image: url('https://www.transparenttextures.com/patterns/p6.png');
+        opacity: 0.15;
+        pointer-events: none;
+      }
+      .abstract-art-bg {
+        background-image: 
+          radial-gradient(circle at 20% 30%, var(--color-primary-faint) 0%, transparent 40%),
+          radial-gradient(circle at 80% 70%, var(--color-primary-faint) 0%, transparent 50%),
+          url("data:image/svg+xml,%3Csvg viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,1000 C300,800 400,900 600,600 C800,300 900,400 1000,0' stroke='%23000' stroke-width='1.5' fill='none' opacity='0.05'/%3E%3C/svg%3E");
+        background-size: cover;
+        background-attachment: fixed;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--color-primary-faint);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--color-primary);
+        opacity: 0.5;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+</head>
+  <body class="abstract-art-bg min-h-screen overflow-hidden">
+    <div id="root"></div>
+    <div class="fixed inset-0 grain-overlay z-[-1]"></div>
+  </body>
+</html>
