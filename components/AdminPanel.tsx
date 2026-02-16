@@ -5,10 +5,12 @@ import FileUpload from './FileUpload';
 
 interface AdminPanelProps {
   onAddBook: (book: Book) => void;
+  onRemoveBook: (id: string) => void;
   loginHistory: LoginSession[];
+  books: Book[];
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ onAddBook, loginHistory }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ onAddBook, onRemoveBook, loginHistory, books }) => {
   const [formData, setFormData] = useState<Partial<Book>>({
     title: '',
     author: '',
@@ -48,6 +50,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onAddBook, loginHistory }) => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 pb-24 animate-in fade-in slide-in-from-bottom duration-700">
+      {/* Shto Libër */}
       <div className="bg-white/60 backdrop-blur-xl p-10 rounded-3xl border border-primary/10 shadow-xl">
         <div className="flex justify-between items-center mb-8">
           <h3 className="text-xl font-bold flex items-center gap-3">
@@ -136,6 +139,58 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onAddBook, loginHistory }) => {
         </form>
       </div>
 
+      {/* Menaxhimi i Katalogut */}
+      <div className="bg-white/60 backdrop-blur-xl p-10 rounded-3xl border border-primary/10 shadow-xl">
+        <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
+          <span className="material-icons text-primary">library_books</span>
+          Menaxhimi i Katalogut
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-primary/10">
+                <th className="py-4 text-[10px] uppercase tracking-widest font-bold text-ink/40">Kopertina</th>
+                <th className="py-4 text-[10px] uppercase tracking-widest font-bold text-ink/40">Titulli & Autori</th>
+                <th className="py-4 text-[10px] uppercase tracking-widest font-bold text-ink/40">Zhanri</th>
+                <th className="py-4 text-[10px] uppercase tracking-widest font-bold text-ink/40">Gjendja</th>
+                <th className="py-4 text-[10px] uppercase tracking-widest font-bold text-ink/40 text-right">Veprime</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-primary/5">
+              {books.map(book => (
+                <tr key={book.id} className="group hover:bg-primary/5 transition-colors">
+                  <td className="py-4">
+                    <img src={book.coverUrl} className="w-10 h-14 object-cover rounded shadow-sm" alt={book.title} />
+                  </td>
+                  <td className="py-4">
+                    <div className="font-bold text-ink">{book.title}</div>
+                    <div className="text-xs text-primary italic">{book.author}</div>
+                  </td>
+                  <td className="py-4">
+                    <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">{book.genre}</span>
+                  </td>
+                  <td className="py-4 font-bold text-ink">{book.stock}</td>
+                  <td className="py-4 text-right">
+                    <button 
+                      onClick={() => {
+                        if(window.confirm(`Dëshironi të fshini "${book.title}"?`)) {
+                          onRemoveBook(book.id);
+                        }
+                      }}
+                      className="text-red-400 hover:text-red-600 transition-colors"
+                      title="Fshi"
+                    >
+                      <span className="material-icons">delete_outline</span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Historiku i Kyçjeve */}
       <div className="bg-white/60 backdrop-blur-xl p-10 rounded-3xl border border-primary/10 shadow-xl">
         <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
           <span className="material-icons text-primary">history</span>

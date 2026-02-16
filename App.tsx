@@ -100,7 +100,6 @@ const INITIAL_BOOKS: Book[] = [
 ];
 
 const App: React.FC = () => {
-  // Theme Persistence
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('biblioteka_theme_id');
     if (saved) {
@@ -110,31 +109,26 @@ const App: React.FC = () => {
     return THEMES[0];
   });
 
-  // Books Persistence
   const [books, setBooks] = useState<Book[]>(() => {
     const saved = localStorage.getItem('biblioteka_books');
     return saved ? JSON.parse(saved) : INITIAL_BOOKS;
   });
   
-  // Borrowed State Persistence
   const [borrowedBookIds, setBorrowedBookIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('biblioteka_borrowed_ids');
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Login History Persistence
   const [loginHistory, setLoginHistory] = useState<LoginSession[]>(() => {
     const saved = localStorage.getItem('biblioteka_login_history');
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Sent Emails Persistence
   const [sentEmails, setSentEmails] = useState<SentEmail[]>(() => {
     const saved = localStorage.getItem('biblioteka_sent_emails');
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Admin Session Persistence
   const [isAdmin, setIsAdmin] = useState(() => {
     return localStorage.getItem('biblioteka_admin_active') === 'true';
   });
@@ -145,7 +139,6 @@ const App: React.FC = () => {
   });
   const [notification, setNotification] = useState<string | null>(null);
 
-  // Sync state to LocalStorage
   useEffect(() => {
     localStorage.setItem('biblioteka_theme_id', theme.id);
     const root = document.documentElement;
@@ -180,6 +173,14 @@ const App: React.FC = () => {
   const handleAddBook = (newBook: Book) => {
     setBooks(prev => [newBook, ...prev]);
     setNotification('Libri u shtua me sukses në koleksion.');
+  };
+
+  const handleRemoveBook = (bookId: string) => {
+    if (!isAdmin) return;
+    setBooks(prev => prev.filter(b => b.id !== bookId));
+    setBorrowedBookIds(prev => prev.filter(id => id !== bookId));
+    if (selectedBook?.id === bookId) setSelectedBook(null);
+    setNotification('Libri u fshi me sukses nga koleksioni.');
   };
 
   const handleBorrow = (bookId: string) => {
@@ -281,7 +282,12 @@ const App: React.FC = () => {
         )}
 
         {view === 'ADMIN' && (
-          <AdminPanel onAddBook={handleAddBook} loginHistory={loginHistory} />
+          <AdminPanel 
+            onAddBook={handleAddBook} 
+            loginHistory={loginHistory} 
+            books={books} 
+            onRemoveBook={handleRemoveBook} 
+          />
         )}
 
         {view === 'INBOX' && (
@@ -314,8 +320,10 @@ const App: React.FC = () => {
         <BookDetails 
           book={books.find(b => b.id === selectedBook.id) || selectedBook} 
           isBorrowed={borrowedBookIds.includes(selectedBook.id)}
+          isAdmin={isAdmin}
           onClose={() => setSelectedBook(null)}
           onBorrow={() => handleBorrow(selectedBook.id)}
+          onRemove={() => handleRemoveBook(selectedBook.id)}
         />
       )}
     </div>

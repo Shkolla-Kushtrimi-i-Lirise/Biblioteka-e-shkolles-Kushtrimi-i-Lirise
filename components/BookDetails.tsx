@@ -5,11 +5,13 @@ import { Book } from '../types';
 interface BookDetailsProps {
   book: Book;
   isBorrowed: boolean;
+  isAdmin: boolean;
   onClose: () => void;
   onBorrow: () => void;
+  onRemove: () => void;
 }
 
-const BookDetails: React.FC<BookDetailsProps> = ({ book, isBorrowed, onClose, onBorrow }) => {
+const BookDetails: React.FC<BookDetailsProps> = ({ book, isBorrowed, isAdmin, onClose, onBorrow, onRemove }) => {
   return (
     <aside className="fixed top-4 right-4 bottom-4 w-full max-w-[480px] bg-white shadow-2xl z-[60] rounded-2xl overflow-hidden border border-primary/10 flex flex-col animate-in slide-in-from-right duration-500">
       <button 
@@ -18,6 +20,20 @@ const BookDetails: React.FC<BookDetailsProps> = ({ book, isBorrowed, onClose, on
       >
         <span className="material-icons text-base">close</span>
       </button>
+
+      {isAdmin && (
+        <button 
+          onClick={() => {
+            if(window.confirm('A jeni të sigurt që dëshironi të fshini këtë libër?')) {
+              onRemove();
+            }
+          }}
+          className="absolute top-6 left-6 w-10 h-10 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-500 hover:text-white transition-all z-30 shadow-lg text-red-500"
+          title="Fshi Librin"
+        >
+          <span className="material-icons text-base">delete</span>
+        </button>
+      )}
 
       <div className="h-80 relative shrink-0 overflow-hidden">
         <img 
