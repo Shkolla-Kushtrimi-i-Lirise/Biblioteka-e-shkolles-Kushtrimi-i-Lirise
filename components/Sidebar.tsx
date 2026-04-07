@@ -10,6 +10,10 @@ interface SidebarProps {
   onLogout: () => void;
   genres: string[];
   authors: string[];
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  selectedGenre: string;
+  setSelectedGenre: (genre: string) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -19,7 +23,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   onLoginClick,
   onLogout,
   genres,
-  authors
+  authors,
+  searchQuery,
+  setSearchQuery,
+  selectedGenre,
+  setSelectedGenre
 }) => {
   return (
     <aside className="w-72 h-screen border-r border-primary/10 flex flex-col p-8 bg-white/40 backdrop-blur-md z-40">
@@ -34,6 +42,17 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <nav className="flex-1 space-y-10 overflow-y-auto pr-2">
+        <div className="relative mb-6">
+          <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 text-sm">search</span>
+          <input 
+            type="text" 
+            placeholder="Kërko libër ose autor..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-primary/5 border border-primary/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-primary/30"
+          />
+        </div>
+
         <div>
           <h3 className="text-[10px] uppercase tracking-[0.3em] text-primary/40 mb-4 font-bold">Navigimi</h3>
           <ul className="space-y-3">
@@ -83,10 +102,22 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div>
           <h3 className="text-[10px] uppercase tracking-[0.3em] text-primary/40 mb-4 font-bold">Zhanret</h3>
           <ul className="space-y-3">
-            {genres.slice(0, 4).map(genre => (
+            <li>
+              <button 
+                onClick={() => setSelectedGenre('Të gjitha')}
+                className={`text-lg transition-colors flex items-center gap-2 group w-full text-left ${selectedGenre === 'Të gjitha' ? 'text-primary font-medium' : 'text-ink/70 hover:text-primary'}`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full transition-colors ${selectedGenre === 'Të gjitha' ? 'bg-primary' : 'bg-primary/20 group-hover:bg-primary'}`}></span>
+                Të gjitha
+              </button>
+            </li>
+            {genres.map(genre => (
               <li key={genre}>
-                <button className="text-lg text-ink/70 hover:text-primary transition-colors flex items-center gap-2 group w-full text-left">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary/10 group-hover:bg-primary transition-colors"></span>
+                <button 
+                  onClick={() => setSelectedGenre(genre)}
+                  className={`text-lg transition-colors flex items-center gap-2 group w-full text-left ${selectedGenre === genre ? 'text-primary font-medium' : 'text-ink/70 hover:text-primary'}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full transition-colors ${selectedGenre === genre ? 'bg-primary' : 'bg-primary/20 group-hover:bg-primary'}`}></span>
                   {genre}
                 </button>
               </li>

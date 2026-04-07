@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Book, ViewState, LoginSession, SentEmail, Theme } from './types';
+import { INITIAL_BOOKS } from './initialBooks';
 import Sidebar from './components/Sidebar';
 import BookCard from './components/BookCard';
 import BookDetails from './components/BookDetails';
@@ -57,48 +58,6 @@ const THEMES: Theme[] = [
   }
 ];
 
-const INITIAL_BOOKS: Book[] = [
-  {
-    id: '1',
-    title: 'Pacientja e Heshtur',
-    author: 'Alex Michaelides',
-    genre: 'Fiksion Modern',
-    coverUrl: 'https://picsum.photos/seed/silent/400/600',
-    synopsis: "Jeta e Alicia Berenson-it duket e përsosur. Një piktore e famshme, ajo jeton në një shtëpi të madhe në një nga zonat më të dëshirueshme të Londrës. Një mbrëmje, burri i saj Gabriel kthehet vonë në shtëpi dhe Alicia e qëllon pesë herë në fytyrë, dhe më pas nuk flet më kurrë asnjë fjalë.",
-    published: 'Shkurt 2019',
-    pages: 336,
-    isbn: '9781250301697',
-    stock: 5,
-    rating: 4.5,
-  },
-  {
-    id: '2',
-    title: 'Gatsby i Madh',
-    author: 'F. Scott Fitzgerald',
-    genre: 'Klasikë',
-    coverUrl: 'https://picsum.photos/seed/gatsby/400/600',
-    synopsis: "Historia e të pasurit misterioz Jay Gatsby dhe dashurisë së tij për të bukurën Daisy Buchanan.",
-    published: 'Prill 1925',
-    pages: 180,
-    isbn: '9780743273565',
-    stock: 3,
-    rating: 5,
-  },
-  {
-    id: '3',
-    title: 'Metamorfoza',
-    author: 'Franz Kafka',
-    genre: 'Klasikë',
-    coverUrl: 'https://picsum.photos/seed/kafka/400/600',
-    synopsis: "Historia e tregtarit Gregor Samsa, i cili zgjohet një mëngjes dhe zbulon se është shndërruar në një insekt gjigant.",
-    published: '1915',
-    pages: 100,
-    isbn: '9780553213690',
-    stock: 2,
-    rating: 4.8,
-  }
-];
-
 const App: React.FC = () => {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('biblioteka_theme_id');
@@ -111,7 +70,15 @@ const App: React.FC = () => {
 
   const [books, setBooks] = useState<Book[]>(() => {
     const saved = localStorage.getItem('biblioteka_books');
-    return saved ? JSON.parse(saved) : INITIAL_BOOKS;
+    const version = localStorage.getItem('biblioteka_books_version');
+    const CURRENT_VERSION = '2.0';
+    
+    if (saved && version === CURRENT_VERSION) {
+      return JSON.parse(saved);
+    }
+    
+    localStorage.setItem('biblioteka_books_version', CURRENT_VERSION);
+    return INITIAL_BOOKS;
   });
   
   const [borrowedBookIds, setBorrowedBookIds] = useState<string[]>(() => {
@@ -132,6 +99,11 @@ const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(() => {
     return localStorage.getItem('biblioteka_admin_active') === 'true';
   });
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState<string>('Të gjitha');
+  const [sortBy, setSortBy] = useState<'title' | 'author' | 'rating'>('title');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [view, setView] = useState<ViewState>(() => {
@@ -197,6 +169,7 @@ const App: React.FC = () => {
       if (book.stock > 0) {
         setBooks(prev => prev.map(b => b.id === bookId ? { ...b, stock: b.stock - 1 } : b));
         setBorrowedBookIds(prev => [...prev, bookId]);
+        setNotification(`U huazua me sukses: ${book.title}`);
         
         const newEmail: SentEmail = {
           id: Date.now().toString(),
@@ -208,9 +181,27 @@ const App: React.FC = () => {
         };
         setSentEmails(prev => [newEmail, ...prev]);
         setNotification(`Konfirmimi u dërgua! Kthejeni librin brenda 7 ditësh.`);
+      } else {
+        setNotification(`Më vjen keq, ky libër nuk është në gjendje.`);
       }
     }
   };
+
+  const filteredBooks = books
+    .filter(book => {
+      const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           book.author.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesGenre = selectedGenre === 'Të gjitha' || book.genre === selectedGenre;
+      return matchesSearch && matchesGenre;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'title') return a.title.localeCompare(b.title);
+      if (sortBy === 'author') return a.author.localeCompare(b.author);
+      if (sortBy === 'rating') return b.rating - a.rating;
+      return 0;
+    });
+
+  const genres = ['Të gjitha', ...new Set(books.map(b => b.genre))];
 
   const handleLogin = (success: boolean) => {
     if (success) {
@@ -242,8 +233,12 @@ const App: React.FC = () => {
         isAdmin={isAdmin}
         onLoginClick={() => setView('LOGIN')}
         onLogout={handleLogout}
-        genres={Array.from(new Set(books.map(b => b.genre)))}
-        authors={Array.from(new Set(books.map(b => b.author)))}
+        genres={Array.from(new Set(INITIAL_BOOKS.map(b => b.genre)))}
+        authors={Array.from(new Set(INITIAL_BOOKS.map(b => b.author)))}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedGenre={selectedGenre}
+        setSelectedGenre={setSelectedGenre}
       />
 
       <main className="flex-1 overflow-y-auto p-8 md:p-12 relative scroll-smooth">
@@ -269,7 +264,7 @@ const App: React.FC = () => {
 
         {view === 'HOME' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-            {books.map(book => (
+            {filteredBooks.map(book => (
               <BookCard 
                 key={book.id} 
                 book={book} 
