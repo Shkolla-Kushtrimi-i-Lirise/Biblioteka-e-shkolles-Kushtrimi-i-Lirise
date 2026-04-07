@@ -6,6 +6,7 @@ interface SidebarProps {
   currentView: ViewState;
   onViewChange: (view: ViewState) => void;
   isAdmin: boolean;
+  currentUser: any;
   onLoginClick: () => void;
   onLogout: () => void;
   genres: string[];
@@ -20,6 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   currentView, 
   onViewChange, 
   isAdmin, 
+  currentUser,
   onLoginClick,
   onLogout,
   genres,
@@ -127,20 +129,31 @@ const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       <div className="mt-auto pt-8 border-t border-primary/5">
-        {!isAdmin ? (
+        {!isAdmin && !currentUser ? (
           <button 
             onClick={onLoginClick}
             className="flex items-center gap-3 text-sm font-bold text-primary/70 hover:text-primary uppercase tracking-widest"
           >
-            <span className="material-icons text-sm">lock_open</span> Hyr si Admin
+            <span className="material-icons text-sm">lock_open</span> Identifikohu
           </button>
         ) : (
-          <button 
-            onClick={onLogout}
-            className="flex items-center gap-3 text-sm font-bold text-red-500 hover:text-red-600 uppercase tracking-widest"
-          >
-            <span className="material-icons text-sm">power_settings_new</span> Çkyçu
-          </button>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                {isAdmin ? 'A' : (currentUser?.name?.[0] || 'S')}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-xs font-bold text-ink truncate">{isAdmin ? 'Administrator' : currentUser?.name}</p>
+                <p className="text-[10px] text-ink/40 uppercase tracking-widest">{isAdmin ? 'Staf' : 'Student'}</p>
+              </div>
+            </div>
+            <button 
+              onClick={onLogout}
+              className="flex items-center gap-3 text-sm font-bold text-red-500 hover:text-red-600 uppercase tracking-widest"
+            >
+              <span className="material-icons text-sm">power_settings_new</span> Çkyçu
+            </button>
+          </div>
         )}
       </div>
     </aside>

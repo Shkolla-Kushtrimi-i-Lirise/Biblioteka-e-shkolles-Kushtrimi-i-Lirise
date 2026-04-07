@@ -203,7 +203,14 @@ const App: React.FC = () => {
 
   const genres = ['Të gjitha', ...new Set(books.map(b => b.genre))];
 
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(() => {
+    const saved = localStorage.getItem('biblioteka_current_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('biblioteka_current_user', JSON.stringify(currentUser));
+  }, [currentUser]);
 
   const handleLogin = (success: boolean, userData?: any) => {
     if (success) {
@@ -224,6 +231,7 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     setIsAdmin(false);
+    setCurrentUser(null);
     setView('LOGIN');
   };
 
@@ -237,6 +245,7 @@ const App: React.FC = () => {
         currentView={view} 
         onViewChange={setView} 
         isAdmin={isAdmin}
+        currentUser={currentUser}
         onLoginClick={() => setView('LOGIN')}
         onLogout={handleLogout}
         genres={Array.from(new Set(INITIAL_BOOKS.map(b => b.genre)))}

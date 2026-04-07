@@ -65,58 +65,64 @@ const LoginPage: React.FC<LoginPageProps> = ({ onClose, onLogin }) => {
         <div className="p-8 md:p-16 flex flex-col justify-center relative bg-white">
           <div className="mb-10 text-center md:text-left">
             <h2 className="text-3xl font-bold text-ink mb-2 tracking-tight">Mirë se vini</h2>
-            <p className="text-ink/40 text-sm italic">Ju lutem identifikohuni për të aksesuar arkivën.</p>
+            <p className="text-ink/40 text-sm italic">Hyrja për studentët dhe stafin e bibliotekës.</p>
           </div>
 
           <div className="space-y-6">
-            <button 
-              onClick={handleGoogleLogin}
-              className="w-full py-4 bg-white border-2 border-primary/20 text-ink rounded-xl font-bold hover:bg-primary/5 transition-all flex items-center justify-center gap-3 shadow-sm"
-            >
-              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
-              Hyr me Google
-            </button>
+            <div className="space-y-4">
+              <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/60 text-center md:text-left">Për Studentët</h3>
+              <button 
+                onClick={handleGoogleLogin}
+                className="w-full py-4 bg-white border-2 border-primary/20 text-ink rounded-xl font-bold hover:bg-primary/5 transition-all flex items-center justify-center gap-3 shadow-sm group"
+              >
+                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                Hyr me llogarinë Google
+              </button>
+            </div>
 
             <div className="relative flex items-center py-4">
               <div className="flex-grow border-t border-primary/10"></div>
-              <span className="flex-shrink mx-4 text-[10px] uppercase tracking-widest font-bold text-ink/20">ose</span>
+              <span className="flex-shrink mx-4 text-[10px] uppercase tracking-widest font-bold text-ink/20 text-center">ose</span>
               <div className="flex-grow border-t border-primary/10"></div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-ink/40 ml-1">Emri i Përdoruesit</label>
-                <input 
-                  required
-                  className="w-full bg-vintage-beige/40 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 italic transition-all" 
-                  placeholder="admin"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-ink/40 ml-1">Fjalëkalimi</label>
-                <input 
-                  required
-                  type="password"
-                  className="w-full bg-vintage-beige/40 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 italic transition-all" 
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                />
-              </div>
+            <div className="space-y-4">
+              <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/60 text-center md:text-left">Për Stafin / Admin</h3>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-ink/40 ml-1">Emri i Përdoruesit</label>
+                  <input 
+                    required
+                    className="w-full bg-vintage-beige/40 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 italic transition-all" 
+                    placeholder="admin"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-ink/40 ml-1">Fjalëkalimi</label>
+                  <input 
+                    required
+                    type="password"
+                    className="w-full bg-vintage-beige/40 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 italic transition-all" 
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                  />
+                </div>
 
-              {error && (
-                <p className="text-red-500 text-xs font-bold text-center animate-shake">Të dhënat janë të pasakta. Provoni përsëri.</p>
-              )}
+                {error && (
+                  <p className="text-red-500 text-xs font-bold text-center animate-shake">Të dhënat janë të pasakta. Provoni përsëri.</p>
+                )}
 
-              <button 
-                type="submit"
-                className="w-full py-5 bg-primary text-white rounded-xl font-bold hover:shadow-2xl hover:shadow-primary/30 active:scale-95 transition-all uppercase tracking-[0.2em] shadow-lg"
-              >
-                Hyr në sistem
-              </button>
-            </form>
+                <button 
+                  type="submit"
+                  className="w-full py-5 bg-primary text-white rounded-xl font-bold hover:shadow-2xl hover:shadow-primary/30 active:scale-95 transition-all uppercase tracking-[0.2em] shadow-lg"
+                >
+                  Hyr si Admin
+                </button>
+              </form>
+            </div>
           </div>
 
           <div className="mt-12 pt-8 border-t border-primary/5 flex items-center justify-center">
