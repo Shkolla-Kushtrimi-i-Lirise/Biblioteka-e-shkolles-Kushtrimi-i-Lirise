@@ -7,6 +7,9 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onClose, onLogin }) => {
+  const [loginType, setLoginType] = useState<'STUDENT' | 'ADMIN'>('STUDENT');
+  const [studentName, setStudentName] = useState('');
+  const [studentPassword, setStudentPassword] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
@@ -31,10 +34,39 @@ const LoginPage: React.FC<LoginPageProps> = ({ onClose, onLogin }) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (username === 'admin' && password === '123admin') {
+      try {
+        await fetch('/api/record-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'Administrator', email: 'admin@biblioteka.com' })
+        });
+      } catch (err) {
+        console.error('Failed to record admin login', err);
+      }
       onLogin(true);
+    } else {
+      setError(true);
+      setTimeout(() => setError(false), 2000);
+    }
+  };
+
+  const handleStudentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (studentName.trim() && studentPassword.trim()) {
+      const studentData = { name: studentName, email: 'manual@student.com' };
+      try {
+        await fetch('/api/record-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(studentData)
+        });
+      } catch (err) {
+        console.error('Failed to record student login', err);
+      }
+      onLogin(true, studentData);
     } else {
       setError(true);
       setTimeout(() => setError(false), 2000);
@@ -62,67 +94,114 @@ const LoginPage: React.FC<LoginPageProps> = ({ onClose, onLogin }) => {
           </div>
         </div>
 
-        <div className="p-8 md:p-16 flex flex-col justify-center relative bg-white">
-          <div className="mb-10 text-center md:text-left">
+        <div className="p-8 md:p-12 flex flex-col justify-center relative bg-white overflow-y-auto max-h-[90vh]">
+          <div className="mb-8 text-center md:text-left">
             <h2 className="text-3xl font-bold text-ink mb-2 tracking-tight">Mirë se vini</h2>
-            <p className="text-ink/40 text-sm italic">Hyrja për studentët dhe stafin e bibliotekës.</p>
+            <p className="text-ink/40 text-sm italic">Hyrja për studentët dhe stafin.</p>
           </div>
 
           <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/60 text-center md:text-left">Për Studentët</h3>
+            <div className="flex bg-primary/5 p-1 rounded-xl">
               <button 
-                onClick={handleGoogleLogin}
-                className="w-full py-4 bg-white border-2 border-primary/20 text-ink rounded-xl font-bold hover:bg-primary/5 transition-all flex items-center justify-center gap-3 shadow-sm group"
+                onClick={() => setLoginType('STUDENT')}
+                className={`flex-1 py-2 text-[10px] uppercase tracking-widest font-bold rounded-lg transition-all ${loginType === 'STUDENT' ? 'bg-white text-primary shadow-sm' : 'text-primary/40 hover:text-primary/60'}`}
               >
-                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                Hyr me llogarinë Google
+                Student
+              </button>
+              <button 
+                onClick={() => setLoginType('ADMIN')}
+                className={`flex-1 py-2 text-[10px] uppercase tracking-widest font-bold rounded-lg transition-all ${loginType === 'ADMIN' ? 'bg-white text-primary shadow-sm' : 'text-primary/40 hover:text-primary/60'}`}
+              >
+                Staf / Admin
               </button>
             </div>
 
-            <div className="relative flex items-center py-4">
-              <div className="flex-grow border-t border-primary/10"></div>
-              <span className="flex-shrink mx-4 text-[10px] uppercase tracking-widest font-bold text-ink/20 text-center">ose</span>
-              <div className="flex-grow border-t border-primary/10"></div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary/60 text-center md:text-left">Për Stafin / Admin</h3>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-ink/40 ml-1">Emri i Përdoruesit</label>
-                  <input 
-                    required
-                    className="w-full bg-vintage-beige/40 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 italic transition-all" 
-                    placeholder="admin"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-ink/40 ml-1">Fjalëkalimi</label>
-                  <input 
-                    required
-                    type="password"
-                    className="w-full bg-vintage-beige/40 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 italic transition-all" 
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                  />
+            {loginType === 'STUDENT' ? (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="space-y-4">
+                  <button 
+                    onClick={handleGoogleLogin}
+                    className="w-full py-4 bg-white border-2 border-primary/20 text-ink rounded-xl font-bold hover:bg-primary/5 transition-all flex items-center justify-center gap-3 shadow-sm group"
+                  >
+                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    Hyr me Google
+                  </button>
                 </div>
 
-                {error && (
-                  <p className="text-red-500 text-xs font-bold text-center animate-shake">Të dhënat janë të pasakta. Provoni përsëri.</p>
-                )}
+                <div className="relative flex items-center py-2">
+                  <div className="flex-grow border-t border-primary/10"></div>
+                  <span className="flex-shrink mx-4 text-[10px] uppercase tracking-widest font-bold text-ink/20 text-center">ose</span>
+                  <div className="flex-grow border-t border-primary/10"></div>
+                </div>
 
-                <button 
-                  type="submit"
-                  className="w-full py-5 bg-primary text-white rounded-xl font-bold hover:shadow-2xl hover:shadow-primary/30 active:scale-95 transition-all uppercase tracking-[0.2em] shadow-lg"
-                >
-                  Hyr si Admin
-                </button>
-              </form>
-            </div>
+                <form onSubmit={handleStudentSubmit} className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-ink/40 ml-1">Emri i Studentit</label>
+                    <input 
+                      required
+                      className="w-full bg-vintage-beige/40 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 italic transition-all" 
+                      placeholder="Emri juaj"
+                      value={studentName}
+                      onChange={e => setStudentName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-ink/40 ml-1">Fjalëkalimi</label>
+                    <input 
+                      required
+                      type="password"
+                      className="w-full bg-vintage-beige/40 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 italic transition-all" 
+                      placeholder="••••••••"
+                      value={studentPassword}
+                      onChange={e => setStudentPassword(e.target.value)}
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    className="w-full py-5 bg-primary text-white rounded-xl font-bold hover:shadow-2xl hover:shadow-primary/30 active:scale-95 transition-all uppercase tracking-[0.2em] shadow-lg"
+                  >
+                    Hyr si Student
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <form onSubmit={handleAdminSubmit} className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-ink/40 ml-1">Emri i Përdoruesit</label>
+                    <input 
+                      required
+                      className="w-full bg-vintage-beige/40 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 italic transition-all" 
+                      placeholder="admin"
+                      value={username}
+                      onChange={e => setUsername(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-ink/40 ml-1">Fjalëkalimi</label>
+                    <input 
+                      required
+                      type="password"
+                      className="w-full bg-vintage-beige/40 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 italic transition-all" 
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full py-5 bg-primary text-white rounded-xl font-bold hover:shadow-2xl hover:shadow-primary/30 active:scale-95 transition-all uppercase tracking-[0.2em] shadow-lg"
+                  >
+                    Hyr si Admin
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {error && (
+              <p className="text-red-500 text-xs font-bold text-center animate-shake">Të dhënat janë të pasakta. Provoni përsëri.</p>
+            )}
           </div>
 
           <div className="mt-12 pt-8 border-t border-primary/5 flex items-center justify-center">

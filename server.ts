@@ -40,6 +40,42 @@ function getServiceAccountAuth() {
   });
 }
 
+// Helper to append sign-in info to Google Doc
+async function recordSignIn(name: string, email: string) {
+  const auth = getServiceAccountAuth();
+  if (!auth) return;
+
+  const timestamp = new Date().toISOString();
+  const docs = google.docs({ version: 'v1', auth });
+  const drive = google.drive({ version: 'v3', auth });
+
+  try {
+    // 1. Append text to Doc
+    await docs.documents.batchUpdate({
+      documentId: DOC_ID,
+      requestBody: {
+        requests: [
+          {
+            insertText: {
+              location: { index: 1 },
+              text: `\nSign-in: ${name} (${email}) at ${timestamp}\n`
+            }
+          }
+        ]
+      }
+    });
+
+    // 2. Ensure file is in the correct folder
+    await drive.files.update({
+      fileId: DOC_ID,
+      addParents: FOLDER_ID,
+      fields: 'id, parents'
+    });
+  } catch (error) {
+    console.error('Error recording sign-in to Google Doc:', error);
+  }
+}
+
 // API Routes
 app.get('/api/auth/url', (req, res) => {
   const url = oauth2Client.generateAuthUrl({
@@ -48,6 +84,15 @@ app.get('/api/auth/url', (req, res) => {
     prompt: 'consent'
   });
   res.json({ url });
+});
+
+app.post('/api/record-login', async (req, res) => {
+  const { name, email } = req.body;
+  if (!name || !email) {
+    return res.status(400).json({ error: 'Name and email are required' });
+  }
+  await recordSignIn(name, email);
+  res.json({ success: true });
 });
 
 app.get(['/auth/callback', '/auth/callback/'], async (req, res) => {
@@ -67,38 +112,7 @@ app.get(['/auth/callback', '/auth/callback/'], async (req, res) => {
     };
 
     // Append to Google Doc using Service Account
-    const auth = getServiceAccountAuth();
-    if (auth) {
-      const docs = google.docs({ version: 'v1', auth });
-      const drive = google.drive({ version: 'v3', auth });
-
-      // 1. Append text to Doc
-      await docs.documents.batchUpdate({
-        documentId: DOC_ID,
-        requestBody: {
-          requests: [
-            {
-              insertText: {
-                location: { index: 1 },
-                text: `\nSign-in: ${userData.name} (${userData.email}) at ${userData.timestamp}\n`
-              }
-            }
-          ]
-        }
-      });
-
-      // 2. Ensure file is in the correct folder (optional if already there, but user asked for it)
-      // We can check if it's in the folder and add it if not
-      try {
-        await drive.files.update({
-          fileId: DOC_ID,
-          addParents: FOLDER_ID,
-          fields: 'id, parents'
-        });
-      } catch (driveError) {
-        console.error('Error moving file to folder:', driveError);
-      }
-    }
+    await recordSignIn(userData.name || 'Unknown', userData.email || 'Unknown');
 
     res.send(`
       <html>
