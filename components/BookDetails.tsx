@@ -92,16 +92,9 @@ const BookDetails: React.FC<BookDetailsProps> = ({ book, isBorrowed, isAdmin, on
       </div>
 
       <div className="p-8 border-t border-primary/10 bg-white/95 backdrop-blur-md flex gap-4">
-        <button 
-          disabled={!isBorrowed && book.stock === 0}
-          onClick={onBorrow}
-          className={`flex-1 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-xl ${isBorrowed ? 'bg-ink text-white hover:bg-ink/90' : (book.stock > 0 ? 'bg-primary text-white hover:brightness-110 shadow-primary/20' : 'bg-ink/10 text-ink/40 cursor-not-allowed')}`}
-        >
-          <span className="material-icons text-sm">{isBorrowed ? 'keyboard_return' : (book.stock > 0 ? 'auto_stories' : 'block')}</span>
-          {isBorrowed ? 'Kthe Librin' : (book.stock > 0 ? 'Huazo Librin' : 'Nuk ka në gjendje')}
-        </button>
-        <button className="px-6 py-4 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors">
+        <button className="flex-1 py-4 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
           <span className="material-icons text-sm">favorite_border</span>
+          Shto në të preferuarat
         </button>
       </div>
     </aside>

@@ -203,16 +203,22 @@ const App: React.FC = () => {
 
   const genres = ['Të gjitha', ...new Set(books.map(b => b.genre))];
 
-  const handleLogin = (success: boolean) => {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  const handleLogin = (success: boolean, userData?: any) => {
     if (success) {
       const newSession: LoginSession = {
         id: Date.now().toString(),
-        user: 'admin',
+        user: userData?.name || 'admin',
         timestamp: new Date().toLocaleString('sq-AL'),
       };
       setLoginHistory(prev => [newSession, ...prev]);
-      setIsAdmin(true);
+      setIsAdmin(userData ? false : true); // If Google login, not necessarily admin
+      setCurrentUser(userData);
       setView('HOME');
+      if (userData) {
+        setNotification(`Mirë se vini, ${userData.name}! Të dhënat tuaja u regjistruan.`);
+      }
     }
   };
 
